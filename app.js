@@ -7,7 +7,7 @@ var Twitter = require('twitter')
 var scrape = require('./scrape.js');
 
 // Environment vars
-env('config/config.env');
+env('/home/GradJobsNI/config/config.env');
 
 // Twitter setup
 var client = new Twitter({
@@ -43,7 +43,7 @@ var postTweets = function(jobs) {
             console.log(err);
           } else if (result.length) {
             // Duplicate
-            console.log(job.title + " - is a duplicate, ignoring.");
+            // console.log(job.title + " - is a duplicate, ignoring.");
           } else {
             // New Job, tweet about it!
             var tweetString = job.title + " - " + job.link;
@@ -92,7 +92,7 @@ var niJobFinderGrads = {
     link: '.job-title a@href'
   },
   pagination: '.next a@href',
-  limit: 5,
+  limit: 10,
   customTransforms : [
     function(url) {
       var id = url.match(/\/\d{6}\//g)[0].replace('/', '');
@@ -115,7 +115,7 @@ var niJobFinderJuniors = {
     link: '.job-title a@href'
   },
   pagination: '.next a@href',
-  limit: 5,
+  limit: 10,
   customTransforms : [
     function(url) {
       var id = url.match(/\/\d{6}\//g)[0].replace('/', '');
@@ -138,7 +138,7 @@ var indeedGrads = {
     id: '@id'
   },
   pagination: '.pagination a:last-child@href',
-  limit: 8
+  limit: 12
 }
 
 var indeedJuniors = {
@@ -150,7 +150,7 @@ var indeedJuniors = {
     id: '@id'
   },
   pagination: '.pagination a:last-child@href',
-  limit: 8
+  limit: 12
 }
 
 
