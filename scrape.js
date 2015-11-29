@@ -23,6 +23,7 @@ var blacklist = [
 exports.job = function(config, callback) {
   
   x(config.url, config.rootSelector, [config.selectors])(function(err, result){
+    if (!result) { result = [] }
     
     // Iterate through each scraped job
     var filteredResults = result.filter(function(job) {
@@ -58,7 +59,7 @@ exports.job = function(config, callback) {
         } 
         return job
       } else {
-        console.log(job.title + " is trash, ignoring.")
+        //console.log(job.title + " is trash, ignoring.")
       }
       
     });

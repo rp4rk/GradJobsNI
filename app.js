@@ -2,12 +2,13 @@
 var async = require('async');
 var env = require('node-env-file');
 var mongodb = require('mongodb');
-var Twitter = require('twitter')
+var Twitter = require('twitter');
+var schedule = require('node-schedule');
 
 var scrape = require('./scrape.js');
 
 // Environment vars
-env('/home/GradJobsNI/config/config.env');
+env('./config/config.env');
 
 // Twitter setup
 var client = new Twitter({
@@ -21,158 +22,158 @@ var client = new Twitter({
 var mongoURL = process.env.MONGO_URL;
 var MongoClient = mongodb.MongoClient;
 
-var postTweets = function(jobs) {
+var postTweets = function(jobs, db, taskDone) {
   
-  // Connect to MongoDB
-  MongoClient.connect(mongoURL, function (err, db) {
+  // Set collection to jobs
+  var collection = db.collection('jobs');
+
+  // Check jobs against existing jobs
+  async.each(jobs, function(job, callback) {
+    // If we can find the job, ignore it otherwise 
+    collection.find({id: job.id}).toArray(function (err, result) {
+      if (err) {
+        // Error
+        console.log(err);
+      } else if (result.length) {
+        // Duplicate
+        // console.log(job.title + " - is a duplicate, ignoring.");
+        callback();
+      } else {
+        // New Job, tweet about it!
+        var tweetString = job.title + " - " + job.link;
+
+        client.post('statuses/update', {
+          status: tweetString
+        },  
+        function(error, tweet, response){
+          if(error) throw error;
+          //console.log(tweet); 
+          //console.log(response); 
+        });
+
+        // Add to our records
+        collection.insert(job, function (err, result) {
+          if (err) {
+            console.log(err);
+           } else {
+            console.log('Added Job - ' + job.title + ' succesfully.');
+            callback();
+           }
+        });   
+      }
+    });
+  }, function(err) {
+    console.log("Finished Cycle");
+    taskDone();
+  })
+
+
+}
+
+  
+
+
+// Scrape configure array
+
+var scrapeTasks = [ 
+  {
+    url : 'http://www.nijobfinder.co.uk/search/262329691/Page1/',
+    rootSelector : '.result',
+    selectors : {
+      title: '.job-title a',
+      image: '.recruiter-logo@src',
+      link: '.job-title a@href'
+    },
+    pagination: '.next a@href',
+    limit: 10,
+    customTransforms : [
+      function(url) {
+        var id = url.match(/\/\d{6}\//g)[0].replace('/', '');
+        id = id.replace('/', '');
+
+        return {
+          property: 'id',
+          value: id
+        }
+      }
+    ]
+  },
+  {
+    url : 'http://www.nijobfinder.co.uk/search/262330730/Page1/',
+    rootSelector : '.result',
+    selectors : {
+      title: '.job-title a',
+      image: '.recruiter-logo@src',
+      link: '.job-title a@href'
+      },
+    pagination: '.next a@href',
+    limit: 10,
+    customTransforms : [
+      function(url) {
+        var id = url.match(/\/\d{6}\//g)[0].replace('/', '');
+        id = id.replace('/', '');
+
+        return {
+          property: 'id',
+          value: id
+        }
+      }
+    ]
+  },
+  {
+    url : 'http://www.indeed.co.uk/graduate-jobs-in-Northern-Ireland',
+    rootSelector: '.result',
+    selectors: {
+      title: '.turnstileLink@title',
+      link: '.turnstileLink@href',
+      id: '@id'
+    },
+    pagination: '.pagination a:last-child@href',
+    limit: 12
+  },
+  {
+    url : 'http://www.indeed.co.uk/junior-jobs-in-Northern-Ireland',
+    rootSelector: '.result',
+    selectors: {
+      title: '.turnstileLink@title',
+      link: '.turnstileLink@href',
+      id: '@id'
+    },
+    pagination: '.pagination a:last-child@href',
+    limit: 12
+  }
+];
+
+// Scrape!
+var initScrape = function() {
+  
+   MongoClient.connect(mongoURL, function (err, db) {
     if (err) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
     } else {
       // Connected!
       console.log('Connection established to', mongoURL);
       
-      // Set collection to jobs
-      var collection = db.collection('jobs');
-      
-      // Check jobs against existing jobs
-      async.each(jobs, function(job, callback) {
-        // If we can find the job, ignore it otherwise 
-        collection.find({id: job.id}).toArray(function (err, result) {
-          if (err) {
-            // Error
-            console.log(err);
-          } else if (result.length) {
-            // Duplicate
-            // console.log(job.title + " - is a duplicate, ignoring.");
-          } else {
-            // New Job, tweet about it!
-            var tweetString = job.title + " - " + job.link;
-            
-            client.post('statuses/update', {
-              status: tweetString
-            },  
-            function(error, tweet, response){
-              if(error) throw error;
-              //console.log(tweet); 
-              //console.log(response); 
-            });
-            
-            // Add to our records
-            collection.insert(job, function (err, result) {
-              if (err) {
-                console.log(err);
-               } else {
-                console.log('Added Job - ' + job.title + ' succesfully.');
-                callback();
-               }
-            });   
-          }
-        });
+      // Iterate through each task
+      async.each(scrapeTasks, function(task, taskDone) {
+        // Scrape each task, tweet, then log
+        scrape.job(task, function(jobs) {
+          postTweets(jobs, db, taskDone);
+        })
+        
       }, function(err) {
-        console.log("Finished Cycle");
-        // Close
+        // All is done
+        console.log("Mission Accomplished")
         db.close();
       })
-    
-      
+                 
     }
-  });
-  
-  
+  }); 
 }
 
-// Scrape configure objects
+// Schedule every 6 minutes
 
-var niJobFinderGrads = {
-  url : 'http://www.nijobfinder.co.uk/search/262329691/Page1/',
-  rootSelector : '.result',
-  selectors : {
-    title: '.job-title a',
-    image: '.recruiter-logo@src',
-    link: '.job-title a@href'
-  },
-  pagination: '.next a@href',
-  limit: 10,
-  customTransforms : [
-    function(url) {
-      var id = url.match(/\/\d{6}\//g)[0].replace('/', '');
-      id = id.replace('/', '');
-      
-      return {
-        property: 'id',
-        value: id
-      }
-    }
-  ]
-}
-
-var niJobFinderJuniors = {
-  url : 'http://www.nijobfinder.co.uk/search/262330730/Page1/',
-  rootSelector : '.result',
-  selectors : {
-    title: '.job-title a',
-    image: '.recruiter-logo@src',
-    link: '.job-title a@href'
-  },
-  pagination: '.next a@href',
-  limit: 10,
-  customTransforms : [
-    function(url) {
-      var id = url.match(/\/\d{6}\//g)[0].replace('/', '');
-      id = id.replace('/', '');
-      
-      return {
-        property: 'id',
-        value: id
-      }
-    }
-  ]
-}
-
-var indeedGrads = {
-  url : 'http://www.indeed.co.uk/graduate-jobs-in-Northern-Ireland',
-  rootSelector: '.result',
-  selectors: {
-    title: '.turnstileLink@title',
-    link: '.turnstileLink@href',
-    id: '@id'
-  },
-  pagination: '.pagination a:last-child@href',
-  limit: 12
-}
-
-var indeedJuniors = {
-  url : 'http://www.indeed.co.uk/junior-jobs-in-Northern-Ireland',
-  rootSelector: '.result',
-  selectors: {
-    title: '.turnstileLink@title',
-    link: '.turnstileLink@href',
-    id: '@id'
-  },
-  pagination: '.pagination a:last-child@href',
-  limit: 12
-}
-
-
-// Scrape!
-
-scrape.job(indeedGrads, function(jobs) {
-  postTweets(jobs);
-})
-
-scrape.job(indeedJuniors, function(jobs) {
-  postTweets(jobs);
-})
-
-scrape.job(niJobFinderGrads, function(jobs) {
-  postTweets(jobs);
-})
-
-scrape.job(niJobFinderJuniors, function(jobs) {
-  postTweets(jobs);
-})
-
-
+var j = schedule.scheduleJob('*/1 * * * *', function() { initScrape() });
 
 
 
