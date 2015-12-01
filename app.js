@@ -105,7 +105,27 @@ var scrapeTasks = [
     },
     pagination: '.pagination a:last-child@href',
     limit: 12
-  }
+  },
+  {
+    url : 'http://www.nijobs.com/ShowResults.aspx?Keywords=Graduate+Junior&Location=31&Category=&Recruiter=Company&Recruiter=Agency',
+    rootSelector: '.job-result',
+    selectors: {
+      title: '.job-result-title h2 a',
+      link: '.job-result-title h2 a@href',
+    },
+    pagination: '#pagination li:last-child a@href',
+    limit: 6,
+    customTransforms : [
+      function(url) {
+        var id = url.match(/\d{7}/g)[0];
+
+        return {
+          property: 'id',
+          value: id
+        }
+      }
+    ]
+  },
 ];
 
 
@@ -123,8 +143,12 @@ var initScrape;
       taskDone();
     })
   }, function(err) {
+    
     // Filter out duplicates
     var jobs = uniq(jobArray);
+    var jobTotalCount = jobArray.length;
+    var jobsFilteredCount = jobs.length;
+    var ignoredCount = 0;
 
     // Add to MongoDB
     MongoClient.connect(mongoURL, function (err, db) {
@@ -143,12 +167,12 @@ var initScrape;
               console.log(err);
             } else if (result.length) {
               // Duplicate
-              console.log(job.title + " - is a duplicate, ignoring.");
+              //console.log(job.title + " - is a duplicate, ignoring.");
+              ignoredCount++;
               callback();
             } else {
               // New Job, tweet about it!
               var tweetString = job.title + " - " + job.link;
-
               client.post('statuses/update', {
                 status: tweetString
               },  
@@ -166,11 +190,17 @@ var initScrape;
                   console.log('Added Job - ' + job.title + ' succesfully.');
                   callback();
                  }
-              });   
+              }); 
+
             }
           });
         }, function(err) {
-          console.log("Mission Accomplished")
+          // Job's done, post stats
+          console.log("Total Jobs: " + jobsFilteredCount);
+          console.log("Total Before Filter: " + jobTotalCount);
+          console.log("Total Jobs Ignored: " + ignoredCount);
+          
+          console.log("Mission Accomplished");
           db.close();
         })
       }
