@@ -10,6 +10,22 @@ var scrape = require('./scrape.js');
 // Environment vars
 env('./config/config.env');
 
+// Array Filter - Remove duplicate jobs
+function uniq(a) {
+  // Create a flat array with our IDs
+  var flat = [];
+  for (var x=0; x<a.length; x++) {
+    flat[x] = a[x].id;
+  } ;
+  
+  // Compare each ID and return the first of each
+  var uniqueJobs = a.filter(function(elem, pos) {
+    return flat.indexOf(elem.id) == pos;
+  });
+  
+  return uniqueJobs;
+}
+
 // Twitter setup
 var client = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -22,59 +38,7 @@ var client = new Twitter({
 var mongoURL = process.env.MONGO_URL;
 var MongoClient = mongodb.MongoClient;
 
-var postTweets = function(jobs, db, taskDone) {
-  
-  // Set collection to jobs
-  var collection = db.collection('jobs');
-
-  // Check jobs against existing jobs
-  async.each(jobs, function(job, callback) {
-    // If we can find the job, ignore it otherwise 
-    collection.find({id: job.id}).toArray(function (err, result) {
-      if (err) {
-        // Error
-        console.log(err);
-      } else if (result.length) {
-        // Duplicate
-        // console.log(job.title + " - is a duplicate, ignoring.");
-        callback();
-      } else {
-        // New Job, tweet about it!
-        var tweetString = job.title + " - " + job.link;
-
-        client.post('statuses/update', {
-          status: tweetString
-        },  
-        function(error, tweet, response){
-          if(error) throw error;
-          //console.log(tweet); 
-          //console.log(response); 
-        });
-
-        // Add to our records
-        collection.insert(job, function (err, result) {
-          if (err) {
-            console.log(err);
-           } else {
-            console.log('Added Job - ' + job.title + ' succesfully.');
-            callback();
-           }
-        });   
-      }
-    });
-  }, function(err) {
-    console.log("Finished Cycle");
-    taskDone();
-  })
-
-
-}
-
-  
-
-
-// Scrape configure array
-
+// Configure what we want to scrape
 var scrapeTasks = [ 
   {
     url : 'http://www.nijobfinder.co.uk/search/262329691/Page1/',
@@ -144,37 +108,79 @@ var scrapeTasks = [
   }
 ];
 
+
 // Scrape!
-var initScrape = function() {
+var initScrape;
+(initScrape = function() {
   
-   MongoClient.connect(mongoURL, function (err, db) {
-    if (err) {
-      console.log('Unable to connect to the mongoDB server. Error:', err);
-    } else {
-      // Connected!
-      console.log('Connection established to', mongoURL);
-      
-      // Iterate through each task
-      async.each(scrapeTasks, function(task, taskDone) {
-        // Scrape each task, tweet, then log
-        scrape.job(task, function(jobs) {
-          postTweets(jobs, db, taskDone);
-        })
+  var jobArray = [];
+  
+  // Scrape each task, append it into job array
+  async.each(scrapeTasks, function(task, taskDone) {
+    // Scrape each task, tweet, then log
+    scrape.job(task, function(jobs) {
+      jobArray = jobArray.concat(jobs)
+      taskDone();
+    })
+  }, function(err) {
+    // Filter out duplicates
+    var jobs = uniq(jobArray);
+
+    // Add to MongoDB
+    MongoClient.connect(mongoURL, function (err, db) {
+      if (err) {
+        console.log('Unable to connect to the mongoDB server. Error:', err);
+      } else {
+        // Connected!
+        console.log('Connection established to', mongoURL);
+        var collection = db.collection('jobs');
         
-      }, function(err) {
-        // All is done
-        console.log("Mission Accomplished")
-        db.close();
-      })
-                 
-    }
-  }); 
+        // Iterate through jobs
+        async.each(jobs, function(job, callback) {
+          collection.find({id: job.id}).toArray(function (err, result) {
+            if (err) {
+              // Error
+              console.log(err);
+            } else if (result.length) {
+              // Duplicate
+              console.log(job.title + " - is a duplicate, ignoring.");
+              callback();
+            } else {
+              // New Job, tweet about it!
+              var tweetString = job.title + " - " + job.link;
+
+              client.post('statuses/update', {
+                status: tweetString
+              },  
+              function(error, tweet, response){
+                if(error) throw error;
+                //console.log(tweet); 
+                //console.log(response); 
+              });
+
+              // Add to our records
+              collection.insert(job, function (err, result) {
+                if (err) {
+                  console.log(err);
+                 } else {
+                  console.log('Added Job - ' + job.title + ' succesfully.');
+                  callback();
+                 }
+              });   
+            }
+          });
+        }, function(err) {
+          console.log("Mission Accomplished")
+          db.close();
+        })
+      }
+    }); 
+    
+  })
+  
+
 }
+)()
 
 // Schedule every 6 minutes
-
 var j = schedule.scheduleJob('*/1 * * * *', function() { initScrape() });
-
-
-
-

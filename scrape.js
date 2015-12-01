@@ -16,7 +16,12 @@ var whitelist = [
 
 var blacklist = [
   "senior",
-  "experienced"
+  "experienced",
+  "london",
+  "programme",
+  "scheme",
+  "glasgow",
+  "manchester"
 ]
 
 // Scrape Export
