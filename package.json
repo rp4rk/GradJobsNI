@@ -4,7 +4,6 @@
   "dependencies": {
     "assert": "^1.3.0",
     "async": "^1.5.0",
-    "chai": "1.9.1",
     "envs": "^0.1.6",
     "grunt": "*",
     "grunt-contrib-clean": "0.5.0",
@@ -21,111 +20,18 @@
     "x-ray": "^2.0.2"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "mocha --compilers js:babel-register"
   },
-  "jshintConfig": {
-    "bitwise": true,
-    "curly": true,
-    "camelcase": true,
-    "eqeqeq": true,
-    "freeze": true,
-    "immed": true,
-    "latedef": false,
-    "newcap": true,
-    "noarg": true,
-    "forin": true,
-    "sub": true,
-    "undef": true,
-    "unused": true,
-    "noempty": true,
-    "boss": false,
-    "eqnull": true,
-    "browser": true,
-    "indent": 4,
-    "maxcomplexity": 7,
-    "maxstatements": 36,
-    "maxparams": 5,
-    "maxdepth": 3,
-    "maxlen": 100,
-    "trailing": true,
-    "maxerr": 5,
-    "globals": {
-      "module": true,
-      "require": true,
-      "describe": true,
-      "it": true,
-      "expect": true,
-      "assert": true,
-      "chai": true,
-      "Buffer": true
-    }
-  },
-  "jscsConfig": {
-    "requireCurlyBraces": [
-      "if",
-      "else",
-      "for",
-      "while",
-      "do",
-      "try",
-      "catch"
-    ],
-    "requireSpaceAfterKeywords": [
-      "if",
-      "else",
-      "for",
-      "while",
-      "do",
-      "switch",
-      "return",
-      "try",
-      "catch"
-    ],
-    "disallowLeftStickedOperators": [
-      "?",
-      "/",
-      "*",
-      "=",
-      "==",
-      "===",
-      "!=",
-      "!==",
-      ">",
-      ">=",
-      "<",
-      "<="
-    ],
-    "disallowRightStickedOperators": [
-      "?",
-      "/",
-      "*",
-      ":",
-      "=",
-      "==",
-      "===",
-      "!=",
-      "!==",
-      ">",
-      ">=",
-      "<",
-      "<="
-    ],
-    "requireRightStickedOperators": [
-      "!"
-    ],
-    "requireLeftStickedOperators": [
-      ","
-    ],
-    "disallowImplicitTypeConversion": [
-      "string"
-    ],
-    "disallowKeywords": [
-      "with"
-    ],
-    "disallowMultipleLineBreaks": true,
-    "safeContextKeyword": "self",
-    "disallowKeywordsOnNewLine": [
-      "else"
-    ]
+  "devDependencies": {
+    "babel": "^6.1.18",
+    "babel-preset-es2015": "^6.1.18",
+    "babel-register": "^6.3.2",
+    "chai": "^3.4.1",
+    "chai-things": "^0.2.0",
+    "mocha": "^2.3.4",
+    "sinon": "^1.17.2",
+    "sinon-chai": "^2.8.0",
+    "winston": "^2.1.1"
   }
 }
