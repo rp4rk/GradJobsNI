@@ -66,7 +66,22 @@ module.exports = function (grunt) {
                 dir: 'coverage/reports',
                 print: 'detail'
             }
-        }
+        },
+        "babel" : {
+          options: {
+            babelrc: ".babelrc",
+            sourceMap: false
+          },
+          dist: {
+            files: [{
+              expand: true,
+              cwd: 'lib/',
+              src: ['**/*.js'],
+              dest: 'dist',
+              ext: '.js'
+            }]
+          }
+        },
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -77,6 +92,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-istanbul');
     grunt.loadNpmTasks('grunt-istanbul-coverage');
+    grunt.loadNpmTasks('grunt-babel');
 
     grunt.registerTask('check', [
         'jshint', 'jscs', 'unitTest'
@@ -88,5 +104,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test', ['check']);
 
-    grunt.registerTask('default', []);
+    grunt.registerTask('default', ['babel']);
 };

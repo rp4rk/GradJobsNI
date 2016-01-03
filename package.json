@@ -29,6 +29,7 @@
     "babel-register": "^6.3.2",
     "chai": "^3.4.1",
     "chai-things": "^0.2.0",
+    "grunt-babel": "^6.0.0",
     "mocha": "^2.3.4",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
