@@ -1,4 +1,4 @@
-# GradJobsNI
+# NIGradJobs
 
 # Requirments
 
