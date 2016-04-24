@@ -22,7 +22,7 @@ const initScrape = function scrapeAndPost() {
         // Remove any dupes that exist already in our database
         GradJobDB.removeDupes(result, 'jobs').then((filteredJobs) => {
           // Only tweet out for production
-          if (process.env.PRODUCTION === true) {
+          if (process.env.PRODUCTION === 'true') {
             filteredJobs.forEach(job => Tweeter.sendTweet(`${job.title} - ${job.location}`));
           } else {
             console.log(`Previous: ${result.length} - After: ${filteredJobs.length}`);
