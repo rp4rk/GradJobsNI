@@ -81,7 +81,8 @@ module.exports = class Scraper {
         if (!result) { reject('No results available.'); }
 
         // Resolve the promise with a filtered and transformed set of jobs
-        resolve(this.returnUniqueJobs(this.applyTransforms(this.jobfilter(result))));
+        if (result)
+          resolve(this.returnUniqueJobs(this.applyTransforms(this.jobfilter(result))));
       })
         .paginate(this.pagination)
         .limit(this.limit);
