@@ -16,26 +16,30 @@ module.exports = class Scraper {
 
   // Filters jobs through the whitelist and blacklist
   jobfilter(joblist) {
-    return joblist.filter(job => {
-      let isValidJob = false;
+    if (joblist) {
+      return joblist.filter(job => {
+        let isValidJob = false;
 
-      // Check through the whitelist
-      wordList.whitelist.forEach(word => {
-        if (job.title.toLowerCase().indexOf(word) > -1) {
-          isValidJob = true;
+        // Check through the whitelist
+        wordList.whitelist.forEach(word => {
+          if (job.title.toLowerCase().indexOf(word) > -1) {
+            isValidJob = true;
 
-          // Check through the blacklist to ensure nothing filters by
-          wordList.blacklist.forEach(badword => {
-            if (job.title.toLowerCase().indexOf(badword) > -1) {
-              isValidJob = false;
-            }
-          });
-        }
+            // Check through the blacklist to ensure nothing filters by
+            wordList.blacklist.forEach(badword => {
+              if (job.title.toLowerCase().indexOf(badword) > -1) {
+                isValidJob = false;
+              }
+            });
+          }
+        });
+
+        // Return any word that has a whitelisted word, but no blacklisted word
+        return isValidJob;
       });
-
-      // Return any word that has a whitelisted word, but no blacklisted word
-      return isValidJob;
-    });
+    } else {
+      console.log(joblist);
+    }
   }
 
 
