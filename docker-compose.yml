@@ -1,0 +1,11 @@
+mongodb:
+  image: mongo:latest
+  ports:
+    - 27017:27017
+nigradjobs:
+  build: .
+  links:
+    - mongodb
+  volumes:
+    - /app/node_modules
+    - ./src:/app

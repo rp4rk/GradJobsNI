@@ -1,0 +1,9 @@
+{
+    "extends": "airbnb/base",
+    "no-unused-vars": false,
+    "no-labels": true,
+    "env": {
+      "node": true,
+      "es6": true,
+    }
+}
