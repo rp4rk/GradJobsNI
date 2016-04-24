@@ -6,7 +6,7 @@ WORKDIR /app
 ADD /src .
 
 # Native Dependencies
-RUN apk add --update make gcc g++
+RUN apk add --update make gcc g++ git
 
 # Install modules
 RUN npm install

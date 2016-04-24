@@ -7,5 +7,5 @@ nigradjobs:
   links:
     - mongodb
   volumes:
-    - /app/node_modules
     - ./src:/app
+    - /app/node_modules

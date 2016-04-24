@@ -19,7 +19,7 @@ module.exports = [
       location: '.job-title a@href',
     },
     pagination: '.next a@href',
-    limit: 10,
+    limit: 2,
     customTransforms: [
       url => {
         let id = url.match(/\/\d{6}\//g)[0].replace('/', '');
@@ -40,7 +40,7 @@ module.exports = [
       location: '.job-title a@href',
     },
     pagination: '.next a@href',
-    limit: 10,
+    limit: 2,
     customTransforms: [
       url => {
         let id = url.match(/\/\d{6}\//g)[0].replace('/', '');
@@ -61,7 +61,7 @@ module.exports = [
       id: '@id',
     },
     pagination: '.pagination a:last-child@href',
-    limit: 12,
+    limit: 2,
   },
   {
     url: 'http://www.indeed.co.uk/junior-jobs-in-Northern-Ireland',
@@ -72,17 +72,36 @@ module.exports = [
       id: '@id',
     },
     pagination: '.pagination a:last-child@href',
-    limit: 12,
+    limit: 2,
   },
   {
-    url: 'http://www.nijobs.com/ShowResults.aspx?Keywords=Graduate+Junior&Location=31&Category=&Recruiter=Company&Recruiter=Agency',
+    url: 'http://www.nijobs.com/ShowResults.aspx?Keywords=Graduate+&Location=31&Category=&Recruiter=Company&Recruiter=Agency',
     rootSelector: '.job-result',
     selectors: {
       title: '.job-result-title h2 a',
       location: '.job-result-title h2 a@href',
     },
     pagination: '#pagination li:last-child a@href',
-    limit: 6,
+    limit: 2,
+    customTransforms: [
+      url => {
+        const id = url.match(/\d{7}/g)[0];
+        return {
+          property: 'id',
+          value: id,
+        };
+      },
+    ],
+  },
+  {
+    url: 'http://www.nijobs.com/ShowResults.aspx?Keywords=JUNIOR&Location=31&Category=&Recruiter=Company&Recruiter=Agency',
+    rootSelector: '.job-result',
+    selectors: {
+      title: '.job-result-title h2 a',
+      location: '.job-result-title h2 a@href',
+    },
+    pagination: '#pagination li:last-child a@href',
+    limit: 2,
     customTransforms: [
       url => {
         const id = url.match(/\d{7}/g)[0];

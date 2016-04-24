@@ -39,20 +39,23 @@ module.exports = class Scraper {
   }
 
 
-  // Apply any transforms
+  // Apply any transforms, including removing Indeed ads (they're broken!)
   applyTransforms(joblist) {
     return joblist.map(job => {
       const jobTransform = job;
 
       // Run through our transforms
-      this.customTransforms.forEach(transform => {
-        const result = transform(jobTransform.location);
-        jobTransform[result.property] = result.val;
-      });
+      if (this.customTransforms.length > 0) {
+        this.customTransforms.forEach(transform => {
+          const result = transform(jobTransform.location);
+          jobTransform[result.property] = result.value;
+        });
+      }
 
       // Return the transformed job
       return jobTransform;
-    });
+    })
+    .filter(job => job.location.indexOf('pagead') < 0);
   }
 
   // Filter the array, return array of unique jobs
