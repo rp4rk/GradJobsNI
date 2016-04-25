@@ -35,9 +35,7 @@ const initScrape = function scrapeAndPost() {
       });
   });
 };
-
 initScrape();
 
-
 // Schedule every hour
-schedule.scheduleJob('* * 1 * *', () => { initScrape(); });
+schedule.scheduleJob('0 * * * *', () => { initScrape(); });
