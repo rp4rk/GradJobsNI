@@ -37,8 +37,6 @@ module.exports = class Scraper {
         // Return any word that has a whitelisted word, but no blacklisted word
         return isValidJob;
       });
-    } else {
-      console.log(joblist);
     }
   }
 

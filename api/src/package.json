@@ -1,0 +1,19 @@
+{
+  "name": "nigjapi",
+  "version": "1.0.0",
+  "description": "API for NIGradJobs",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon -L --use_strict --harmony-destructuring app.js"
+  },
+  "author": "Ryan Park",
+  "license": "ISC",
+  "dependencies": {
+    "co-body": "^4.2.0",
+    "koa": "^1.2.0",
+    "koa-cors": "0.0.16",
+    "koa-paginate": "0.0.4",
+    "koa-route": "^2.4.2",
+    "mongodb": "^2.1.18"
+  }
+}

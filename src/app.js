@@ -25,8 +25,8 @@ const initScrape = function scrapeAndPost() {
           if (process.env.PRODUCTION === 'true') {
             filteredJobs.forEach(job => Tweeter.sendTweet(`${job.title} - ${job.location}`));
           } else {
-            console.log(`Previous: ${result.length} - After: ${filteredJobs.length}`);
             filteredJobs.forEach(job => console.log(`${job.title} - ${job.location}`));
+            console.log(`Previous: ${result.length} - After: ${filteredJobs.length}`);
           }
 
           // Add the filtered jobs in
