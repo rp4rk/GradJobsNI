@@ -1,0 +1,18 @@
+<nav>
+  <ul class="pager flex-pager">
+    <li class="previous"><a ng-click="goBack()" href=""><span aria-hidden="true">&larr;</span> Older</a></li>
+    <div class="filter">
+      <input></input>
+    </div>
+    <div class="amount-selector">
+      <label>Results Per Page:</label>
+      <select id="results-per-page">
+         <option value = "1">one</option>
+         <option value = "2">two</option>
+         <option value = "3">three</option>
+         <option value = "4">four</option>
+       </select>
+    </div>
+    <li class="next"><a ng-click="goForwards()" href="">Newer <span aria-hidden="true">&rarr;</span></a></li>
+  </ul>
+</nav>

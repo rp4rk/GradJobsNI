@@ -1,0 +1,5 @@
+<ul class="list-group">
+  <pagination></pagination>
+  <job-list-item ng-repeat="job in jobs.data | limitTo: listDetails.limit : listDetails.offset"></job-list-item>
+  <pagination></pagination>
+</ul>
